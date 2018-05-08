@@ -8,7 +8,7 @@ class Database(object):
     @staticmethod
     def initialze():
         client = pymongo.MongoClient(Database.URI)
-        Database.DATABASE = client['fullstack_test']
+        Database.DATABASE = client['fullstack']
 
     @staticmethod
     def insert(collection, data):
