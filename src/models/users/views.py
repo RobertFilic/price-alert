@@ -1,6 +1,9 @@
 from flask import Blueprint, request, session, url_for, render_template, redirect
-
 from src.models.users.user import User
+import src.models.users.errors as UserErrors
+
+#from werkzeug.utils import redirect
+
 
 user_blueprint = Blueprint('user', __name__)
 
@@ -12,16 +15,33 @@ def login_user():
         email = request.form['email']
         password = request.form['hashed']
 
-        if User.is_login_vlaid(email, password):
-            session['email'] = email
-            return redirect(url_for(".user_alerts"))
+        try:
+            if User.is_login_vlaid(email, password):
+                session['email'] = email
+                return redirect(url_for(".user_alerts"))
 
-    render_template('/users/login.html') # Possible improvements: send the user an error
+        except UserErrors.UserError as e:
+            return e.message
+
+    render_template('/users/login.html') # Possible improvements: send the user an error if the Login is invalid
 
 
-@user_blueprint.route('/register')
+@user_blueprint.route('/register', methods=['GET', 'POST'])
 def register_user():
-    pass
+    if request.method == "POST":
+        # check user/password combo
+        email = request.form['email']
+        password = request.form['hashed']
+
+        try:
+            if User.register_user(email, password):
+                session['email'] = email
+                return redirect(url_for(".user_alerts"))
+
+        except UserErrors.UserError as e:
+            return e.message
+
+    render_template('/users/register.html') # Possible improvements: send the user an error if the Login is invalid
 
 
 @user_blueprint.route('/alerts')
